@@ -39,12 +39,6 @@ ModuleGroup:
         '}'
 ;
 
-ModuleGroup:
-    'modules' name=QualifiedName '{'
-    (Description)
-    (elements+=(Module))*
-    '}'
-;
 
 Module:
     'module' name=QualifiedName '{'
