@@ -11,7 +11,7 @@ entry Model:
         |UseCase+=UseCase
         |Actor+=Actor
         |AbstractElement+=AbstractElement
-        |ModuleImport+=ModuleImport
+        |ModuleGroups+=ModuleGroup
         |Requirements=Requirements
     )*
 ;
@@ -29,6 +29,13 @@ Project:
 
 AbstractElement:
     Module | EnumX  
+;
+
+ModuleGroup:
+    'modules' name=QualifiedName '{'
+    (Description)
+    (elements+=(Module))*
+    '}'
 ;
 
 Module:
