@@ -174,6 +174,11 @@ export function translateUseCase(useCase: UseCase, ucStack: UseCaseClass[] = [])
     if(uc != null)
         { return uc; }
 
+    console.log("useCase.depends:", useCase.depends);
+    console.log("useCase.depend:", useCase.depend);
+    console.log("Traduzindo depends de:", useCase.name_fragment);
+
+
     const aux = new UseCaseClass(
         useCase.id,
         useCase.name_fragment??"Caso de Uso Sem Nome",
@@ -182,7 +187,12 @@ export function translateUseCase(useCase: UseCase, ucStack: UseCaseClass[] = [])
             // @ts-expect-error
             return translateRequirement(r, r.ref);
         }),
+        // @ts-ignore
+        [useCase.depend?.ref, ...useCase.depends].filter((obj): obj is Reference<UseCase> => obj !== undefined && obj.ref !== undefined).map(obj => translateUseCase(obj.ref))
+
     );
+
+    
 
     useCase.events.forEach(e => aux.event?.push(translateEvent(e, aux)))
     
