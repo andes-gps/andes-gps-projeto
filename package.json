@@ -37,7 +37,7 @@
         "test": "vitest run",
         "coverage": "vitest run --coverage",
         "test:watch": "vitest watch",
-        "test:cli": "npm run build && npm exec andes-cli generate ./teste.andes"
+        "test:cli": "npm run build && node dist/main.js generate teste.andes -d generated"
     },
     "dependencies": {
         "@codingame/monaco-vscode-editor-service-override": "1.83.16",
@@ -114,73 +114,61 @@
             }
         ],
         "commands": [
+            
             {
-                "command": "andes.generateDocumentation",
-                "title": "Generate Project Documentation"
-            },
-            {
-                "command": "andes.generateTestDocumentation",
-                "title": "Generate Test Documentation with OpenAI"
-            },
-            {
-                "command": "andes.generateManagementDocumentation",
-                "title": "Generate Management Documentation to MADE"
-            },
-            {
-                "command": "andes.generateAllDocumentation",
+                "command": "andes.generateAll",
                 "title": "Generate All"
             },
             {
-                "command": "andes.generateSparkDocument",
-                "title": "Generate Spark Document"
+                "command": "andes.generateSpark",
+                "title": "Generate .spark File"
+            },
+            {
+                "command": "andes.generateMade",
+                "title": "Generate .made File"
+            },
+            {
+                "command": "andes.generateDocs",
+                "title": "Generate Project Documentation"
             }
         ],
         "menus": {
             "commandPalette": [
                 {
-                    "command": "andes.generateDocumentation",
+                    "command": "andes.generateAll",
                     "when": "editorLangId == andes"
                 },
                 {
-                    "command": "andes.generateTestDocumentation",
+                    "command": "andes.generateSpark",
                     "when": "editorLangId == andes"
                 },
                 {
-                    "command": "andes.generateManagementDocumentation",
+                    "command": "andes.generateMade",
                     "when": "editorLangId == andes"
                 },
                 {
-                    "command": "andes.generateAllDocumentation",
-                    "when": "editorLangId == andes"
-                },
-                {
-                    "command": "andes.generateSparkDocument",
+                    "command": "andes.generateDocs",
                     "when": "editorLangId == andes"
                 }
             ],
             "editor/context": [
                 {
-                    "command": "andes.generateDocumentation",
+                    "command": "andes.generateAll",
                     "group": "z_commands",
                     "when": "editorLangId == andes"
                 },
                 {
-                    "command": "andes.generateTestDocumentation",
+                    "command": "andes.generateSpark",
                     "group": "z_commands",
                     "when": "editorLangId == andes"
                 },
                 {
-                    "command": "andes.generateManagementDocumentation",
+                    "command": "andes.generateMade",
                     "group": "z_commands",
                     "when": "editorLangId == andes"
                 },
                 {
-                    "command": "andes.generateAllDocumentation",
-                    "group": "z_commands",
-                    "when": "editorLangId == andes"
-                },
-                {
-                    "command": "andes.generateSparkDocument",
+                    "command": "andes.generateDocs",
                     "group": "z_commands",
                     "when": "editorLangId == andes"
                 }
@@ -192,7 +180,7 @@
     ],
     "main": "./out/extension/main.cjs",
     "bin": {
-        "andes-cli": "./bin/cli.js"
+        "andes-cli": "./out/cli/main.js"
     },
     "files": [
         "bin",

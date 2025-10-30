@@ -1,6 +1,5 @@
-import { Reference } from "langium";
-import { Actor as InternalActor, BussinesRule, FunctionalRequirement, isFunctionalRequirement, NonFunctionalRequirement, Requirements, UseCase, Entity, isRequirement, isRequirements, LocalEntity, Attribute, EnumX, EnumEntityAtribute, Relation, isOneToOne, isManyToOne, isOneToMany, Module, Event, isEvent } from "../language/generated/ast.js";
-import { ActorType, AttributeType, EntityType, EnumAttributeType, EnumEntityType, EventType, PackageType, RelationType, RequirimentAgregationClass, RequirimentsBaseClass, UseCaseClass } from "andes-lib";
+import { BussinesRule, FunctionalRequirement, isFunctionalRequirement, NonFunctionalRequirement, LocalEntity, Attribute, EnumX, EnumEntityAtribute, Relation, isOneToOne, isManyToOne, isOneToMany, Module } from "../language/generated/ast.js";
+import { AttributeType, EntityType, EnumAttributeType, EnumEntityType, PackageType, RelationType } from "andes-lib";
 
 
 export function translateEnumx(enumX: EnumX): EnumEntityType
@@ -147,9 +146,9 @@ export function translateModule(module: Module): PackageType
 {
     return {
         identifier: module.name,
-        description: module.description ? module.description : "",
-        entities: module.localEntities.map(e => translateLocalEntity(e)),
-        enums: module.enumXs.map(e => translateEnumx(e)),
+        description: module.description??"",
+        entities: module.localEntities.map(translateLocalEntity),
+        enums: module.enumXs.map(translateEnumx),
     }
 }
 
@@ -167,139 +166,6 @@ export function translateModule(module: Module): PackageType
 //     return moduleImport
 // }
 
-// UseCase
-export function translateUseCase(useCase: UseCase, ucStack: UseCaseClass[] = []): UseCaseClass
-{
-    const uc = ucStack.find(u => u.identifier == useCase.id);
-    if(uc != null)
-        { return uc; }
-
-    console.log("useCase.depends:", useCase.depends);
-    console.log("useCase.depend:", useCase.depend);
-    console.log("Traduzindo depends de:", useCase.name_fragment);
-
-
-    const aux = new UseCaseClass(
-        useCase.id,
-        useCase.name_fragment??"Caso de Uso Sem Nome",
-        useCase.description,
-        useCase.requirements.filter(r => { return isRequirement(r) && isRequirements(r.ref) }).map(r => {
-            // @ts-expect-error
-            return translateRequirement(r, r.ref);
-        }),
-        // @ts-ignore
-        [useCase.depend?.ref, ...useCase.depends].filter((obj): obj is Reference<UseCase> => obj !== undefined && obj.ref !== undefined).map(obj => translateUseCase(obj.ref))
-
-    );
-
-    
-
-    useCase.events.forEach(e => aux.event?.push(translateEvent(e, aux)))
-    
-
-    ucStack.push(aux);
-
-    return aux;
-}
-
-export function translateEvent(event: Event, ucRef: UseCaseClass, eventStack: EventType[] = []): EventType
-{
-    const e = eventStack.find(_e => _e.identifier == event.id);
-    const depends = event.depends;
-
-    if(e != undefined)
-    {
-        return e;
-    }
-
-    if(event.depend != null && !event.depends.includes(event.depend))
-        { depends.push(event.depend); }
-
-    let action: string[] = [];
-    if(event.action && event.action instanceof Array)
-    {
-        action = event.action;
-    }
-
-    const aux: EventType = {
-        identifier: event.id,
-        name: event.name_fragment??"Evento Sem Nome",
-        ucRef: ucRef,
-        action: action,
-        description: event.description,
-        depends: []
-    }
-
-    eventStack.push(aux);
-
-    depends.forEach(d => {
-        if(isEvent(d.ref))
-        {
-            aux.depends?.push(translateEvent(d.ref, ucRef, eventStack))
-        }
-    })
-
-    return aux;
-}
-
-
-export function translateEntity(entity: Reference<Entity>): EntityType
-{
-    return {
-        identifier: entity.$refText,
-    }
-}
-
-export function translateActor(actor: InternalActor): ActorType
-{
-    return {
-        identifier: actor.name,
-        description: actor.comment,
-        targetType: translateEntity(actor.entity),
-    }
-}
-
-
-// Requirements
-export function translateRequirements(req: Requirements | undefined): RequirimentAgregationClass
-{
-    if(req == undefined)
-        { return new RequirimentAgregationClass("", "")};
-
-    const r = new RequirimentAgregationClass(req.id, req.name_fragment??"", req.description);
-
-    const reqStack: RequirimentsBaseClass[] = [];
-
-    req.fr.forEach(frq => r.fr.push(translateRequirement(frq, r, reqStack)));
-    req.nfr.forEach(nfrq => r.nfr.push(translateRequirement(nfrq, r, reqStack)));
-    req.br.forEach(br => r.br.push(translateRequirement(br, r, reqStack)));
-
-    return r;
-}
-
-export function translateRequirement(req: FunctionalRequirement | NonFunctionalRequirement | BussinesRule, reqRef: RequirimentAgregationClass, reqStack: RequirimentsBaseClass[] = []): RequirimentsBaseClass
-{
-    const v = reqStack.find(obj=>obj.identifier==req.id);
-    if(v != undefined)
-        { return v; }
-
-    const dependencies = req.depends;
-    if(req.depend)
-        { dependencies.push(req.depend); }
-
-    const aux = new RequirimentsBaseClass(
-        req.id,
-        req.name_fragment??"Requisito Sem Nome Definido",
-        reqRef,
-        req.priority??"",
-        req.description??"",
-        dependencies.map(d => new RequirimentsBaseClass(d.ref?.id??"ERRO", d.ref?.name_fragment??"Requisito Sem Nome Definido", reqRef, ""))
-    )
-
-    reqStack.push(aux);
-
-    return aux;
-}
 
 export function translateFR(fr: FunctionalRequirement): FunctionalRequirement {
         // @ts-ignore

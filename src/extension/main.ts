@@ -68,23 +68,17 @@ function registerGenerateCommands(context: vscode.ExtensionContext) : void {
             }
         }
     }  
-    const generateDocumentation = build_generate_functions({ only_Documentation: true })
-    context.subscriptions.push(vscode.commands.registerCommand("andes.generateDocumentation", generateDocumentation))
-    
-    const generateTestDocumentation = build_generate_functions({ only_testing: true })
-    
-    context.subscriptions.push(vscode.commands.registerCommand("andes.generateTestDocumentation", generateTestDocumentation))
-    
-    const generateManagementDocumentation = build_generate_functions({ only_made: true })
-    
-    context.subscriptions.push(vscode.commands.registerCommand("andes.generateManagementDocumentation", generateManagementDocumentation))
 
-    const generateSparkDocument = build_generate_functions({ only_spark: true })
-    
-    context.subscriptions.push(vscode.commands.registerCommand("andes.generateSparkDocument", generateSparkDocument))
+    const generateDocumentation = build_generate_functions({ only_Documentation: true, vscode: true })
+    context.subscriptions.push(vscode.commands.registerCommand("andes.generateDocs", generateDocumentation))
 
-    const generateAllDocumentation = build_generate_functions({ all: true })
-    
-    context.subscriptions.push(vscode.commands.registerCommand("andes.generateAllDocumentation", generateAllDocumentation))
+    const generateSpark = build_generate_functions({ only_spark: true, vscode: true })
+    context.subscriptions.push(vscode.commands.registerCommand("andes.generateSpark", generateSpark))
 
+    const generateMade = build_generate_functions({ only_made: true, vscode: true })
+    context.subscriptions.push(vscode.commands.registerCommand("andes.generateMade", generateMade))
+
+    const generateAll = build_generate_functions({ all: true, vscode: true })
+    context.subscriptions.push(vscode.commands.registerCommand("andes.generateAll", generateAll))
 }
+

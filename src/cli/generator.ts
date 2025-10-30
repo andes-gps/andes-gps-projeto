@@ -5,12 +5,37 @@ import { MadeApplication } from './made/application.js'
 import { SparkApplication } from './spark/application.js';
 import path from 'path';
 
-import { ApplicationCreator, ProjectModuleType, ProjectOverviewType, ProjectType } from "andes-lib"
-import { translateActor, translateModule, translateRequirements, translateUseCase } from './translate-utils.js';
+import { ActorType, ApplicationCreator, ProjectModuleType, ProjectOverviewType, ProjectType, UseCaseClass } from "andes-lib"
+import { translateActor } from './translate/actor.js';
+import { translateUsecase } from './translate/usecase.js';
+import { translateRequirements } from './translate/requiriment.js';
+import { translateModule } from './translate-utils.js';
+
+import * as vscode from 'vscode';
+
+
+function printMessage(msg: string, options: GenerateOptions)
+{
+    if (options.vscode)
+        { vscode.window.showInformationMessage(msg); }
+    else
+        { console.log(msg); }
+}
+
+function printError(msg: string, options: GenerateOptions)
+{
+    if (options.vscode)
+        { vscode.window.showErrorMessage(msg); }
+    else
+        { console.error(msg); }
+}
+
+
 
 export function generateJavaScript(model: Model, filePath: string, destination: string | undefined,opts: GenerateOptions): string {
+    printMessage("Generating...", opts);
+
     const final_destination  = extractDestination(filePath, destination);
-    
     const artifactApplication = new ArtifactApplication(model,final_destination);
     const madeApplication = new MadeApplication(model,final_destination); 
     const sparkApplication = new SparkApplication(model,final_destination);
@@ -25,16 +50,15 @@ export function generateJavaScript(model: Model, filePath: string, destination: 
     }
 
     const singleModule: ProjectModuleType = {
-        actors: model.Actor.map(c => translateActor(c)),
-        uc: model.UseCase.map(uc => translateUseCase(uc)),
+        actors: model.Actor.map(c => translateActor(c)).filter(obj => obj!=null) as ActorType[],
+        uc: model.UseCase.map(uc => translateUsecase(uc)) as UseCaseClass[],
         description: model.project?.description ? model.project.description : "No Description",
         identifier: model.project?.id ? model.project.id : "",
         miniwolrd: model.project?.miniworld ? model.project?.miniworld : "Sem Minimundo",
         name: model.project?.name_fragment ? model.project.name_fragment : "Projeto sem Nome",
         purpose: model.project?.purpose ? model.project?.purpose : "Sem Propósito",
         requisites: translateRequirements(model.Requirements),
-        // @ts-ignore
-        packages: model.AbstractElement.filter(pkgs => isModule(pkgs)).map(pkg => translateModule(pkg)),
+        packages: model.AbstractElement.filter(isModule).map(translateModule),
     }
 
     const project: ProjectType = {  
@@ -50,24 +74,23 @@ export function generateJavaScript(model: Model, filePath: string, destination: 
         opts.all = true;
     }
 
-    if (opts.only_Documentation){
-        console.log("Not Implemented Yet");
-    }
-    if (opts.only_spark){
-        sparkApplication.create()
-    }
-
-    if (opts.only_testing){
-        artifactApplication.create()
+    if (opts.only_Documentation)
+    { 
+        artifactApplication;
+        printError("Not Implemented yet", opts);
+        return final_destination;
     }
 
-    if (opts.only_made){
-        madeApplication.create()
-    }
+    else if (opts.only_spark)
+        { sparkApplication.create() }
 
-    if (opts.all){
-        app.create();
-    }
+    else if (opts.only_made)
+        { madeApplication.create() }
+
+    else if (opts.all)
+        {  app.create(); }
+
+    printMessage("Successfull Created", opts);
     
     return final_destination;
 }

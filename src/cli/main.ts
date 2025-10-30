@@ -16,11 +16,11 @@ export const generateAction = async (fileName: string, opts: GenerateOptions): P
 
 export type GenerateOptions = {
     destination?: string;
-    only_Documentation?:boolean,
-    only_spark?:boolean,
-    only_testing?: boolean,
-    only_made?:boolean,
-    all?:boolean
+    only_Documentation?:boolean;
+    only_spark?:boolean;
+    only_made?:boolean;
+    all?:boolean;
+    vscode?:boolean;
 }
 
 export default function(): void {
