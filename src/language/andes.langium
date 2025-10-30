@@ -7,14 +7,9 @@ import 'entities'
 
 entry Model:    
     
-       (   project = Project
-        |UseCase+=UseCase
-        |Actor+=Actor
-        |AbstractElement+=AbstractElement
-        |ModuleGroups+=ModuleGroup
-        |Requirements=Requirements
-    )*
-    (abstractElement +=(AbstractElement | ModuleImport))*
+       (   project = Project)
+       (abtractElement+=( AbstractElement | ModuleImport | UseCaseElements)
+       | Requirements= Requirements)*
 ;
 
 Project:
@@ -29,23 +24,16 @@ Project:
 ;
 
 AbstractElement:
-    Module | EnumX | ModuleGroup 
+    Module | EnumX 
 ;
 
-ModuleGroup:
-    'modules' name = QualifiedName '{'
-        (Description)
-        (elements +=(AbstractElement))*
-        '}'
+UseCaseElements:
+    UseCase | Actor
 ;
-
 
 Module:
     'module' name=QualifiedName '{'
-        ( Description 
-        | localEntities+=(LocalEntity)
-        | enumXs+=(EnumX)
-        | modules+= (Module) )*
-        (elements +=(AbstractElement | LocalEntity))*
+        ( Description)
+        (elements+=(AbstractElement | LocalEntity))*
     '}'
 ; 
