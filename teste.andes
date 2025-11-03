@@ -128,6 +128,43 @@ usecase Notifications {
     }
 }
 
+
+modules testeModuleGroup{
+    description: "Descricao teste moduleGroup"
+    module ModuleExemplo{
+        enum Prioridade {
+        baixa
+        media
+        alta
+    }
+        enum Status {
+            pendente
+            andamento
+            concluida
+            cancelada
+        }
+        entity Usuario {
+            nome: string
+            _email: email
+            senha: string
+        }
+        entity Categoria {
+            // Descrição do Nome?
+            nome: string
+            usuario OneToMany Usuario
+        }
+        entity Tarefa {
+            titulo: string
+            descricao: string
+            data_vencimento: date
+            prioridade uses Prioridade
+            status uses Status
+            categoria ManyToOne Categoria
+            usuario ManyToOne Usuario
+        }
+    }
+}
+
 module ToDoApp {
     description: "Main module of the To-Do List application"
 
