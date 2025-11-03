@@ -8,10 +8,7 @@ import 'entities'
 entry Model:    
     
     (   project = Project
-        |UseCase+=UseCase
-        |Actor+=Actor
-        |AbstractElement+=AbstractElement
-        |ModuleImport+=ModuleImport
+        |abstractElement += (AbstractElement | ModuleGroup | UseCaseModel | ModuleImport) 
         |Requirements=Requirements
     )*
 ;
@@ -31,12 +28,27 @@ AbstractElement:
     Module | EnumX  
 ;
 
+UseCaseElements:
+    UseCase | Actor 
+;
+
+UseCaseModel:
+    'usModel' id =QualifiedName '{'
+        (elements += UseCaseElements)*   
+    '}'
+;
 Module:
     'module' name=QualifiedName '{'
         ( Description 
-        | localEntities+=(LocalEntity)
-        | enumXs+=(EnumX)
-        | modules+= (Module)
+        | elements +=( AbstractElement | LocalEntity)
         )*
     '}'
 ; 
+
+ModuleGroup:
+    'modules' name=QualifiedName '{'
+        (Description
+        | AbstractElement+= (AbstractElement | ModuleImport)
+        | modules += Module)*
+        '}'
+;

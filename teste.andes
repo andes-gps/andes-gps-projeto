@@ -162,3 +162,40 @@ module ToDoApp {
         user ManyToOne User
     }
 }
+
+
+modules Teste{
+    description: "Teste"
+    module Nome{
+            enum Priority {
+            low
+            medium
+            high
+        }
+
+        enum Status {
+            pending
+            in_progress
+            completed
+            canceled
+        }
+
+        // Description of the User class
+        entity User {
+            _email: email
+            password: string
+        }
+
+        entity Category {
+            user OneToMany User
+        }
+
+        entity Task {
+            title: string
+            due_date: date
+            status uses Status
+            category ManyToOne Category
+            user ManyToOne User
+        }
+    }
+}
