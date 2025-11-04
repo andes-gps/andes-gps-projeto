@@ -1,35 +1,31 @@
-import 'terminals'
-import 'helpers'
-import 'requirement'
 import 'entities'
 
-
+// Definição de Atores
 Actor:
     (Comment)?
-    // TODO Talvez o entity deva ser só LocalEntity
-    'actor' name=QualifiedName 'is' entity=[Entity:QualifiedName] ('extends' superType=[Actor:QualifiedName])?
+    'actor' id=QualifiedName ('name' ':' fullName=STRING)? ('extends' superType=[Actor:QualifiedName])?
+    (Comment)?
 ;
 
+// Definição de Casos de Uso
 UseCase:
-    'usecase' id=ID '{'
-        (Name
-         |Description
-         |'requirements'':' requirement= [Requirement:QualifiedName](',' requirements+=[Requirement:QualifiedName])?         
-         |events+=Event 
-         |'depend'':' depend= [UseCase:QualifiedName](',' depends+=[UseCase:QualifiedName])?
-         |'performer' ':' actors+=[Actor:QualifiedName](',' actors+=[Actor:QualifiedName])*
-        )*
+    (Comment)?
+    'usecase' id=QualifiedName ('extends' superType=[UseCase:QualifiedName])? '{'
+        Name
+        Description?
+        'performer' ':' actors+=[Actor:QualifiedName] (',' actors+=[Actor:QualifiedName])*
+        (events+=Event)*
     '}'
+    (Comment)?
 ;
 
+// Definição de Eventos
 Event:
     'event' id=ID '{'
-         (Name
-         |Description
-         |'action' ':' action=STRING(',' action+=STRING)?
-         |'requirements'':' requirement= [FunctionalRequirement:QualifiedName](',' requirements+=[FunctionalRequirement:QualifiedName])?         
-         |'depend'':' depend= [Event:QualifiedName](',' depends+=[Event:QualifiedName])?
-         |'performer' ':' actors+=[Actor:QualifiedName](',' actors+=[Actor:QualifiedName])*
+        (Name
+        Description?
+        'action' ':' action=STRING
+        ('depend' ':' depends+=[Event:QualifiedName] (',' depends+=[Event:QualifiedName])*)?
         )*
     '}'
 ;
