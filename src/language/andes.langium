@@ -4,12 +4,15 @@ import 'helpers'
 import 'requirement'
 import 'usecase'
 import 'entities'
+import 'config'
 
 entry Model:    
     
-       (   project = Project)
-       (abtractElement+=( AbstractElement | ModuleImport | UseCaseElements)
-       | Requirements= Requirements)*
+    (   project = Project
+        |abstractElement += (AbstractElement | UseCaseModel | ModuleImport) 
+        |Requirements=Requirements
+    )*
+    (configuration = Configuration)?
 ;
 
 Project:
@@ -28,12 +31,18 @@ AbstractElement:
 ;
 
 UseCaseElements:
-    UseCase | Actor
+    UseCase | Actor 
 ;
 
+UseCaseModel:
+    'usModel' id =QualifiedName '{'
+        (elements += UseCaseElements)*   
+    '}'
+;
 Module:
     'module' name=QualifiedName '{'
-        ( Description)
-        (elements+=(AbstractElement | LocalEntity))*
+        ( Description 
+        | elements +=( AbstractElement | LocalEntity)
+        )*
     '}'
 ; 

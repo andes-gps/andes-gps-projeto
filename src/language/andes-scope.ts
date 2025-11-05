@@ -1,58 +1,43 @@
 import { AstNode, AstNodeDescription, DefaultScopeComputation, LangiumDocument } from "langium";
 import { CancellationToken } from "vscode-languageclient";
-import { Model, isModule, isLocalEntity, FunctionalRequirement, NonFunctionalRequirement, BussinesRule } from "./generated/ast.js";
-
+import { Model, isActor, isLocalEntity, isModule, isModuleImport, isUseCasesModel } from "./generated/ast.js";
 
 /**
  * Gerador customizado para o escopo global do arquivo.
  * Por padrão, o escopo global só contém os filhos do nó raiz,
+ * mas é do nosso interesse que as ImportedEntity (filhas de nós ModuleImport)
  * sejam acessíveis globalmente
  */
 export class CustomScopeComputation extends DefaultScopeComputation {
     override async computeExports(document: LangiumDocument<AstNode>, cancelToken?: CancellationToken | undefined): Promise<AstNodeDescription[]> {
-        // Os nós que normalmente estariam no escopo global
-        
-        const default_global = await super.computeExports(document, cancelToken)
+        // Nós que normalmente estariam no escopo global
+        const default_global = await super.computeExports(document, cancelToken);
 
-        const root = document.parseResult.value as Model
+        // Obter o nó raiz do documento (esperado ser um Model)
+        const root = document.parseResult.value as Model;
 
-        const array: (FunctionalRequirement | NonFunctionalRequirement | BussinesRule)[] = [];
-
-        root.Requirements?.fr.forEach(fr => array.push(fr));
-        root.Requirements?.nfr.forEach(nfr => array.push(nfr));
-        root.Requirements?.br.forEach(br => array.push(br));
-
-        array.map(requirement => this.exportNode(requirement, default_global, document))    
-        
-        const requirements =array.map(requirement => this.descriptions.createDescription(requirement, `${requirement.$container.id}.${requirement.id}`, document))
-        
-        const useCases = root.UseCase.map(useCase => 
-                this.descriptions.createDescription(useCase, `${useCase.id}`, document))
-        
-        const events = root.UseCase.flatMap(useCase => 
-            useCase.events.map(event => this.descriptions.createDescription(event, `${event.$container.id}.${event.id}`, document)))
-
-        root.UseCase.map(
-                    useCase => this.exportNode(useCase, default_global, document))
-        
-        root.Actor.map(
-            actor => this.exportNode(actor, default_global, document))
-
-        root.UseCase.map(
-                        usecase => usecase.events.map(event=>this.exportNode(event, default_global, document)))
-        
-        root.AbstractElement.filter(isModule).map(k =>
-            [...k.localEntities, ...k.enumXs, ...k.modules].map(e =>
+        // Colocar no escopo global todas as ImportedEntity de todos os ModuleImport
+        root.abstractElement.filter(isModuleImport).map(k =>
+            k.entities.map(e =>
                 this.exportNode(e, default_global, document)
             )
-        )
-        
-        const entities = root.AbstractElement.filter(isModule).flatMap(m =>
-            [...m.localEntities, ...m.enumXs, ...m.modules].filter(isLocalEntity).map(e =>
+        );
+
+        // Colocar no escopo global todas as LocalEntity de todos os Module com o nome qualificado
+        const entities = root.abstractElement.filter(isModule).flatMap(m =>
+            m.elements.filter(isLocalEntity).map(e =>
                 this.descriptions.createDescription(e, `${e.$container.name}.${e.name}`, document)
             )
-        )
+        );
 
-        return default_global.concat(requirements, useCases, events, entities)
+        // Colocar no escopo global todos os Actors de todos os UseCasesModel
+        const actors = root.abstractElement.filter(isUseCasesModel).flatMap(ucm =>
+            ucm.elements.filter(isActor).map(actor =>
+                this.descriptions.createDescription(actor, `${ucm.id}.${actor.id}`, document)
+            )
+        );
+
+        // Retornar o escopo global contendo as entidades e atores
+        return default_global.concat(entities).concat(actors);
     }
 }

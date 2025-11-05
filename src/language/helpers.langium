@@ -29,3 +29,13 @@ Architecture returns string:
 DATATYPE returns string:
     ('string'|'integer'|'decimal'|'datetime'|'date'|'boolean'|'uuid'| 'email'| 'cpf'|'cnpj'|'zipcode'|'currency'|'mobilePhoneNumber'|'phoneNumber'| 'file'|'void')
 ;
+
+
+LANGUAGETYPE returns string:
+    ('python'|'java'|'csharp-minimal-api'|'csharp-clean-architecture')
+;
+
+
+FEATURE_TYPE returns string:
+    ('authentication')
+;
