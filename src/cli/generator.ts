@@ -1,4 +1,4 @@
-import { isModule, type Model } from '../language/generated/ast.js';
+import { EnumX, isEnumX, isModule, Module, ProjectModule, type Model } from '../language/generated/ast.js';
 import { GenerateOptions } from './main.js';
 import { ArtifactApplication } from './artifacts/application.js'
 import { MadeApplication } from './made/application.js'
@@ -9,7 +9,7 @@ import { ActorType, ApplicationCreator, ProjectModuleType, ProjectOverviewType, 
 import { translateActor } from './translate/actor.js';
 import { translateUsecase } from './translate/usecase.js';
 import { translateRequirements } from './translate/requiriment.js';
-import { translateModule } from './translate-utils.js';
+import { translateEnumx, translateModule, translateProjectModule } from './translate-utils.js';
 
 import * as vscode from 'vscode';
 
@@ -34,7 +34,6 @@ function printError(msg: string, options: GenerateOptions)
 
 export function generateJavaScript(model: Model, filePath: string, destination: string | undefined,opts: GenerateOptions): string {
     printMessage("Generating...", opts);
-
     const final_destination  = extractDestination(filePath, destination);
     const artifactApplication = new ArtifactApplication(model,final_destination);
     const madeApplication = new MadeApplication(model,final_destination); 
@@ -48,6 +47,15 @@ export function generateJavaScript(model: Model, filePath: string, destination: 
         purpose: model.project?.purpose ? model.project?.purpose : "Sem Propósito",
         identifier: model.project?.id??"",
     }
+    
+    const packages: any[] = [];
+    for (const e of model.AbstractElement ?? []) {
+        if (isModule(e)) packages.push(translateModule(e as Module));
+        else if (isEnumX(e)) packages.push(translateEnumx(e as EnumX));
+    }
+    for (const pm of model.projectModule ?? []) {
+        packages.push(translateProjectModule(pm as ProjectModule));
+    }
 
     const singleModule: ProjectModuleType = {
         actors: model.Actor.map(c => translateActor(c)).filter(obj => obj!=null) as ActorType[],
@@ -58,8 +66,8 @@ export function generateJavaScript(model: Model, filePath: string, destination: 
         name: model.project?.name_fragment ? model.project.name_fragment : "Projeto sem Nome",
         purpose: model.project?.purpose ? model.project?.purpose : "Sem Propósito",
         requisites: translateRequirements(model.Requirements),
-        packages: model.AbstractElement.filter(isModule).map(translateModule),
-    }
+        packages: packages
+        }
 
     const project: ProjectType = {  
         modules: [singleModule],

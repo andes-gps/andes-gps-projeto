@@ -1,4 +1,4 @@
-import { BussinesRule, FunctionalRequirement, isFunctionalRequirement, NonFunctionalRequirement, LocalEntity, Attribute, EnumX, EnumEntityAtribute, Relation, isOneToOne, isManyToOne, isOneToMany, Module } from "../language/generated/ast.js";
+import { BussinesRule, FunctionalRequirement, isFunctionalRequirement, NonFunctionalRequirement, LocalEntity, Attribute, EnumX, EnumEntityAtribute, Relation, isOneToOne, isManyToOne, isOneToMany, Module, ProjectModule, isEnumX, isLocalEntity, isModule } from "../language/generated/ast.js";
 import { AttributeType, EntityType, EnumAttributeType, EnumEntityType, PackageType, RelationType } from "andes-lib";
 
 
@@ -11,48 +11,6 @@ export function translateEnumx(enumX: EnumX): EnumEntityType
     }
 }
 
-// export function translateAttrEnum(attrEnum: AttributeEnum): AttributeEnum {
-//     const name = attrEnum.name
-//     const fullName = attrEnum.fullName ?? ""
-//     const comment = attrEnum.comment ?? ""
-    
-//     return attrEnum
-// }
-
-// Entity
-// export function translateLocalEntity(localEntity: LocalEntity): LocalEntity {
-//         // @ts-ignore
-//     const name = localEntity.name
-
-//     const attributes = []
-//     for (const attr of localEntity.attributes) attributes.push(translateAttribute(attr))
-    
-//     const enumEntityAtributes = []
-//     for (const eea of localEntity.enumentityatributes) enumEntityAtributes.push(translateEnumEntityAttribute(eea))
-    
-//     const functions = []
-//     for (const func of localEntity.functions) functions.push(translateFunction(func))
-
-//     const relations = []
-//     for (const rel of localEntity.relations) relations.push(translateRelation(rel))
-
-//         // @ts-ignore
-//     const isAbstract = localEntity.is_abstract
-
-//         // @ts-ignore
-//     var superType: LocalEntity | ImportedEntity | undefined
-//     const ref_temp = localEntity.superType?.ref
-//     if (ref_temp) {
-//         if (isLocalEntity(ref_temp)) superType = translateLocalEntity(ref_temp)
-//         else if (isImportedEntity(ref_temp)) superType = translateImportedEntity(ref_temp)
-//     }
-//     else superType = undefined
-    
-//         // @ts-ignore
-//     const comment = localEntity.comment ?? ""
-
-//     return localEntity
-// }
 
 export function translateLocalEntity(entity: LocalEntity): EntityType
 {
@@ -65,40 +23,6 @@ export function translateLocalEntity(entity: LocalEntity): EntityType
     }
 }
 
-// export function translateImportedEntity(importEntity: ImportedEntity): ImportedEntity {
-//         // @ts-ignore
-//     const name = importEntity.name
-
-//     return importEntity
-// }
-
-// export function translateFunction(func: FunctionEntity): FunctionEntity {
-//         // @ts-ignore
-//     const name = func.name
-
-//     const paramters = []
-//     for (const par of func.paramters) {
-//         if (isElement(par)) paramters.push(translateElement(par));
-//         else if (Array.isArray(par)) for (const elem of par) paramters.push(translateElement(elem));
-//     }
-
-//         // @ts-ignore
-//     const response = func.response.toString()
-
-//         // @ts-ignore
-//     const comment = func.comment ?? ""
-
-//     return func
-// }
-
-// export function translateElement(elem: Element): Element {
-//         // @ts-ignore
-//     const name =  elem.name
-//         // @ts-ignore
-//     const type = elem.type.toString()
-    
-//     return elem
-// }
 
 export function translateAttribute(attr: Attribute): AttributeType
 {
@@ -151,20 +75,6 @@ export function translateModule(module: Module): PackageType
         enums: module.enumXs.map(translateEnumx),
     }
 }
-
-// export function translateModuleImport(moduleImport: ModuleImport): ModuleImport {
-//         // @ts-ignore
-//     const name = moduleImport.name
-//         // @ts-ignore
-//     const package_path = moduleImport.package_path
-//         // @ts-ignore
-//     const library = moduleImport.library
-
-//     const entities = []
-//     for (const ent of moduleImport.entities) entities.push(translateImportedEntity(ent));
-
-//     return moduleImport
-// }
 
 
 export function translateFR(fr: FunctionalRequirement): FunctionalRequirement {
@@ -238,6 +148,123 @@ export function translateBR(br: BussinesRule): BussinesRule {
     return br
 }
 
+export function translateProjectModule(projectModule: ProjectModule): PackageType {
+    const packages: PackageType[] = [];
+    const entities: EntityType[] = [];
+    const enums: EnumEntityType[] = [];
+
+    for (const elem of projectModule.abstractElements ?? []) {
+        if (isModule(elem)) {
+            packages.push(translateModule(elem as Module));
+        } else if (isLocalEntity(elem)) {
+            entities.push(translateLocalEntity(elem as LocalEntity));
+        } else if (isEnumX(elem)) {
+            enums.push(translateEnumx(elem as EnumX));
+        }
+    }
+
+    return {
+        identifier: projectModule.name,
+        description: projectModule.description ?? "",
+        packages: packages,
+        entities,
+        enums,
+    } as unknown as PackageType;
+}
+
+
+// export function translateAttrEnum(attrEnum: AttributeEnum): AttributeEnum {
+//     const name = attrEnum.name
+//     const fullName = attrEnum.fullName ?? ""
+//     const comment = attrEnum.comment ?? ""
+    
+//     return attrEnum
+// }
+
+// Entity
+// export function translateLocalEntity(localEntity: LocalEntity): LocalEntity {
+//         // @ts-ignore
+//     const name = localEntity.name
+
+//     const attributes = []
+//     for (const attr of localEntity.attributes) attributes.push(translateAttribute(attr))
+    
+//     const enumEntityAtributes = []
+//     for (const eea of localEntity.enumentityatributes) enumEntityAtributes.push(translateEnumEntityAttribute(eea))
+    
+//     const functions = []
+//     for (const func of localEntity.functions) functions.push(translateFunction(func))
+
+//     const relations = []
+//     for (const rel of localEntity.relations) relations.push(translateRelation(rel))
+
+//         // @ts-ignore
+//     const isAbstract = localEntity.is_abstract
+
+//         // @ts-ignore
+//     var superType: LocalEntity | ImportedEntity | undefined
+//     const ref_temp = localEntity.superType?.ref
+//     if (ref_temp) {
+//         if (isLocalEntity(ref_temp)) superType = translateLocalEntity(ref_temp)
+//         else if (isImportedEntity(ref_temp)) superType = translateImportedEntity(ref_temp)
+//     }
+//     else superType = undefined
+    
+//         // @ts-ignore
+//     const comment = localEntity.comment ?? ""
+
+//     return localEntity
+// }
+
+// export function translateImportedEntity(importEntity: ImportedEntity): ImportedEntity {
+//         // @ts-ignore
+//     const name = importEntity.name
+
+//     return importEntity
+// }
+
+// export function translateFunction(func: FunctionEntity): FunctionEntity {
+//         // @ts-ignore
+//     const name = func.name
+
+//     const paramters = []
+//     for (const par of func.paramters) {
+//         if (isElement(par)) paramters.push(translateElement(par));
+//         else if (Array.isArray(par)) for (const elem of par) paramters.push(translateElement(elem));
+//     }
+
+//         // @ts-ignore
+//     const response = func.response.toString()
+
+//         // @ts-ignore
+//     const comment = func.comment ?? ""
+
+//     return func
+// }
+
+// export function translateElement(elem: Element): Element {
+//         // @ts-ignore
+//     const name =  elem.name
+//         // @ts-ignore
+//     const type = elem.type.toString()
+    
+//     return elem
+// }
+
+// export function translateModuleImport(moduleImport: ModuleImport): ModuleImport {
+//         // @ts-ignore
+//     const name = moduleImport.name
+//         // @ts-ignore
+//     const package_path = moduleImport.package_path
+//         // @ts-ignore
+//     const library = moduleImport.library
+
+//     const entities = []
+//     for (const ent of moduleImport.entities) entities.push(translateImportedEntity(ent));
+
+//     return moduleImport
+// }
+
 // export function translateBrToBrC(br: BussinesRule): BuisinesRuleClass
 // {
 //     return new BuisinesRuleClass(br.id, br.description);
@@ -261,4 +288,3 @@ export function translateBR(br: BussinesRule): BussinesRule {
 // {
 //     return new NonFunctionalRequirementClass(nfr.id, nfr.description);
 // }
-
