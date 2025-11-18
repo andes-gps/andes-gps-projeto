@@ -1,5 +1,8 @@
-import { BussinesRule, FunctionalRequirement, isFunctionalRequirement, NonFunctionalRequirement, LocalEntity, Attribute, EnumX, EnumEntityAtribute, Relation, isOneToOne, isManyToOne, isOneToMany, Module, ProjectModule, isEnumX, isLocalEntity, isModule } from "../language/generated/ast.js";
-import { AttributeType, EntityType, EnumAttributeType, EnumEntityType, PackageType, RelationType } from "andes-lib";
+import { BussinesRule, FunctionalRequirement, isFunctionalRequirement, NonFunctionalRequirement, LocalEntity, Attribute, EnumX, EnumEntityAtribute, Relation, isOneToOne, isManyToOne, isOneToMany, Module, ProjectModule } from "../language/generated/ast.js";
+import { ActorType, AttributeType, EntityType, EnumAttributeType, EnumEntityType, PackageType, ProjectModuleType, RelationType } from "andes-lib";
+import { translateRequirements } from "./translate/requiriment.js";
+import { translateActor } from "./translate/actor.js";
+import { translateUsecase } from "./translate/usecase.js";
 
 
 export function translateEnumx(enumX: EnumX): EnumEntityType
@@ -148,28 +151,19 @@ export function translateBR(br: BussinesRule): BussinesRule {
     return br
 }
 
-export function translateProjectModule(projectModule: ProjectModule): PackageType {
-    const packages: PackageType[] = [];
-    const entities: EntityType[] = [];
-    const enums: EnumEntityType[] = [];
 
-    for (const elem of projectModule.abstractElements ?? []) {
-        if (isModule(elem)) {
-            packages.push(translateModule(elem as Module));
-        } else if (isLocalEntity(elem)) {
-            entities.push(translateLocalEntity(elem as LocalEntity));
-        } else if (isEnumX(elem)) {
-            enums.push(translateEnumx(elem as EnumX));
-        }
-    }
 
+export function translateProjectModule(projectModule: ProjectModule): ProjectModuleType {
     return {
-        identifier: projectModule.name,
-        description: projectModule.description ?? "",
-        packages: packages,
-        entities,
-        enums,
-    } as unknown as PackageType;
+        miniwolrd: projectModule.project?.miniworld ?? "",
+        purpose: projectModule.project?.purpose ?? "",
+        requisites: translateRequirements(projectModule.Requirements),
+        actors: projectModule.Actor.map(translateActor).filter(obj => obj!=null) as ActorType[],
+        uc: projectModule.UseCase.map(uc => translateUsecase(uc)),
+        packages: projectModule.Module.map(translateModule),
+        name: projectModule.project?.name_fragment ?? "",
+        identifier: projectModule.project?.id ?? "",
+    }
 }
 
 

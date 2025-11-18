@@ -30,21 +30,18 @@ Project:
 
 ProjectModule:
     'projectModule' name=QualifiedName '{'
-        ( Description 
-            | project += Project 
+        (    project = Project 
             | Requirements=Requirements
-            | UseCaseElements += UseCaseElement
-            | abstractElements += AbstractElement
+            | UseCase += UseCase
+            | Actor += Actor
+            | Module += Module
+            | EnumX += EnumX
         )*
     '}'
 ;
 
 AbstractElement:
     Module | EnumX  
-;
-
-UseCaseElement:
-    UseCase | Actor
 ;
 
 Module:
