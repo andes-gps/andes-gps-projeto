@@ -154,7 +154,6 @@ export function translateBR(br: BussinesRule): BussinesRule {
 
 
 export function translateProjectModule(projectModule: ProjectModule): ProjectModuleType {
-    console.log("Debug requirements:" , projectModule.Requirements);
     return {
         miniwolrd: projectModule.project?.miniworld ?? "",
         purpose: projectModule.project?.purpose ?? "",
