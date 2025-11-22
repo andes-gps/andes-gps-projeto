@@ -1,15 +1,12 @@
-import { isModule, type Model } from '../language/generated/ast.js';
+import { type Model } from '../language/generated/ast.js';
 import { GenerateOptions } from './main.js';
 import { ArtifactApplication } from './artifacts/application.js'
 import { MadeApplication } from './made/application.js'
 import { SparkApplication } from './spark/application.js';
 import path from 'path';
 
-import { ActorType, ApplicationCreator, ProjectModuleType, ProjectOverviewType, ProjectType, UseCaseClass } from "andes-lib"
-import { translateActor } from './translate/actor.js';
-import { translateUsecase } from './translate/usecase.js';
-import { translateRequirements } from './translate/requiriment.js';
-import { translateModule } from './translate-utils.js';
+import { ApplicationCreator, ProjectModuleType, ProjectOverviewType, ProjectType } from "andes-lib"
+import { translateProjectModule } from './translate-utils.js';
 
 import * as vscode from 'vscode';
 
@@ -34,7 +31,6 @@ function printError(msg: string, options: GenerateOptions)
 
 export function generateJavaScript(model: Model, filePath: string, destination: string | undefined,opts: GenerateOptions): string {
     printMessage("Generating...", opts);
-
     const final_destination  = extractDestination(filePath, destination);
     const artifactApplication = new ArtifactApplication(model,final_destination);
     const madeApplication = new MadeApplication(model,final_destination); 
@@ -49,22 +45,25 @@ export function generateJavaScript(model: Model, filePath: string, destination: 
         identifier: model.project?.id??"",
     }
 
-    const singleModule: ProjectModuleType = {
-        actors: model.Actor.map(c => translateActor(c)).filter(obj => obj!=null) as ActorType[],
-        uc: model.UseCase.map(uc => translateUsecase(uc)) as UseCaseClass[],
-        description: model.project?.description ? model.project.description : "No Description",
-        identifier: model.project?.id ? model.project.id : "",
-        miniwolrd: model.project?.miniworld ? model.project?.miniworld : "Sem Minimundo",
-        name: model.project?.name_fragment ? model.project.name_fragment : "Projeto sem Nome",
-        purpose: model.project?.purpose ? model.project?.purpose : "Sem Propósito",
-        requisites: translateRequirements(model.Requirements),
-        packages: model.AbstractElement.filter(isModule).map(translateModule),
-    }
+    // const singleModule: ProjectModuleType = {
+    //     actors: model.Actor.map(c => translateActor(c)).filter(obj => obj!=null) as ActorType[],
+    //     uc: model.UseCase.map(uc => translateUsecase(uc)) as UseCaseClass[],
+    //     description: model.project?.description ? model.project.description : "No Description",
+    //     identifier: model.project?.id ? model.project.id : "",
+    //     miniwolrd: model.project?.miniworld ? model.project?.miniworld : "Sem Minimundo",
+    //     name: model.project?.name_fragment ? model.project.name_fragment : "Projeto sem Nome",
+    //     purpose: model.project?.purpose ? model.project?.purpose : "Sem Propósito",
+    //     requisites: translateRequirements(model.Requirements),
+    //     packages: packages
+    //     }
+
+    const modules : ProjectModuleType[] = model.projectModule.map(translateProjectModule);    
 
     const project: ProjectType = {  
-        modules: [singleModule],
+        modules: modules,
         overview: overview,
     }
+
 
     const app = new ApplicationCreator(project, final_destination);
     

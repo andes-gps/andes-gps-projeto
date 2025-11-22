@@ -36,7 +36,7 @@ export class SparkApplication {
         }
 
         ${modules.map(module => expandToStringWithNL`
-            module ${module.name} {
+            sparkModule ${module.name} {
                 ${module.localEntities.map(localEntity => this.createEntity(localEntity)).join('\n\n')}
                 ${module.enumXs.map(enumX => this.createEnum(enumX)).join('\n\n')}
             }

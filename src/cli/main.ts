@@ -1,4 +1,4 @@
-import type { Model } from '../language/generated/ast.js';
+import { type Model } from '../language/generated/ast.js';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { AndesLanguageMetaData } from '../language/generated/module.js';

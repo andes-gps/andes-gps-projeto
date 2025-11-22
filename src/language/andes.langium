@@ -12,6 +12,7 @@ entry Model:
         |Actor+=Actor
         |AbstractElement+=AbstractElement
         |ModuleImport+=ModuleImport
+        |projectModule += ProjectModule
         |Requirements=Requirements
     )*
 ;
@@ -27,16 +28,28 @@ Project:
         '}'
 ;
 
+ProjectModule:
+    'projectModule' name=QualifiedName '{'
+        (    project = Project 
+            | Requirements=Requirements
+            | UseCase += UseCase
+            | Actor += Actor
+            | Module += Module
+            | EnumX += EnumX
+        )*
+    '}'
+;
+
 AbstractElement:
     Module | EnumX  
 ;
 
 Module:
-    'module' name=QualifiedName '{'
+    'sparkModule' name=QualifiedName '{'
         ( Description 
         | localEntities+=(LocalEntity)
         | enumXs+=(EnumX)
-        | modules+= (Module)
+        | modules+= (AbstractElement)
         )*
     '}'
 ; 
