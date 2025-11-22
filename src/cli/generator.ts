@@ -96,11 +96,16 @@ export function generateJavaScript(model: Model, filePath: string, destination: 
     //     }
 
     const modules : ProjectModuleType[] = model.projectModule.map(translateProjectModule);    
+    console.log('DEBUG: Translated modules count=', modules.length);
+    console.log('DEBUG: Translated modules', modules);
     
+    console.log('DEBUG: Overview:', overview);
+
     const project: ProjectType = {  
         modules: modules,
         overview: overview,
     }
+
 
     const app = new ApplicationCreator(project, final_destination);
     
