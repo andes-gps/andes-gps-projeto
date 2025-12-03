@@ -28,7 +28,7 @@ jobs:
           MY_API_REPORTFY: ${{ secrets.DISCORD_BOT_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
-          GITHUB_TOKEN: ${{ secrets.REPORTFY_GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ secrets.REPOSITORY }}
+          GIT_TOKEN: ${{ secrets.REPORTFY_GITHUB_TOKEN }}
+          GIT_REPOSITORY: ${{ secrets.REPOSITORY }}
           
         run: python ReportfyBot.py
