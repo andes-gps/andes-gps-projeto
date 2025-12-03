@@ -84,6 +84,7 @@ async def on_ready():
                     print("⚠️ Nenhuma seleção feita, mas continuando para leitura do relatório...")
                 except Exception as e:  # captura qualquer outro erro do run()
                     print(f"⚠️ Erro no Reportify.run(): {e}")
+                    print(f"ERRO AQUI 1")
         
         await asyncio.to_thread(run_report)
         await channel.send("📊 Relatório gerado com sucesso!")
@@ -122,6 +123,7 @@ async def on_ready():
         await bot.close()
 
 bot.run(TOKEN)
+
 
 
 
