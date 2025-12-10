@@ -1,6 +1,39 @@
 import { AstNode, AstNodeDescription, DefaultScopeComputation, LangiumDocument } from "langium";
 import { CancellationToken } from "vscode-languageclient";
-import { Model, isModule, isLocalEntity, FunctionalRequirement, NonFunctionalRequirement, BussinesRule } from "./generated/ast.js";
+import { Model, isModule, isLocalEntity, FunctionalRequirement, NonFunctionalRequirement, BussinesRule, isProjectModule, UseCase, Event } from "./generated/ast.js";
+
+
+
+function generateRequirementDescription(requirement: FunctionalRequirement | NonFunctionalRequirement | BussinesRule): string {
+    
+    if ( isProjectModule(requirement.$container.$container) ) {
+        return `${requirement.$container.$container.name}.${requirement.$container.id}.${requirement.id}`;
+    }
+
+    return `${requirement.$container.id}.${requirement.id}`;
+}
+
+function generateUseCaseDescription(useCase: UseCase): string {
+    if ( isProjectModule(useCase.$container) ) {
+        return `${useCase.$container.name}.${useCase.id}`;
+    }
+
+    return `${useCase.id}`;
+}
+
+function generateEventDescription(event : Event): string {
+    if ( isProjectModule(event.$container.$container) ) {
+        return `${event.$container.$container.name}.${event.$container.id}.${event.id}`;
+    }
+    return `${event.$container.id}.${event.id}`;
+}
+
+function existProjectModule(root: Model){
+    if (root.projectModule.length > 0){
+        return true;
+    }
+    return false;
+}
 
 
 /**
@@ -14,23 +47,34 @@ export class CustomScopeComputation extends DefaultScopeComputation {
         
         const default_global = await super.computeExports(document, cancelToken)
 
-        const root = document.parseResult.value as Model
+        const root = document.parseResult.value as Model;
 
         const array: (FunctionalRequirement | NonFunctionalRequirement | BussinesRule)[] = [];
-
-        root.Requirements?.fr.forEach(fr => array.push(fr));
-        root.Requirements?.nfr.forEach(nfr => array.push(nfr));
-        root.Requirements?.br.forEach(br => array.push(br));
-
+        const arrayUC: UseCase[] = [];
+        
+        if (existProjectModule(root)){
+            root.projectModule.forEach(pm => {
+                pm.Requirements?.fr.forEach(fr => array.push(fr));
+                pm.Requirements?.nfr.forEach(nfr => array.push(nfr));
+                pm.Requirements?.br.forEach(br => array.push(br));
+                pm.UseCase.forEach(uc => arrayUC.push(uc));
+            });
+        } else{
+            root.Requirements?.fr.forEach(fr => array.push(fr));
+            root.Requirements?.nfr.forEach(nfr => array.push(nfr));
+            root.Requirements?.br.forEach(br => array.push(br));
+            root.UseCase.forEach(uc => arrayUC.push(uc));
+        }
+        
         array.map(requirement => this.exportNode(requirement, default_global, document))    
         
-        const requirements =array.map(requirement => this.descriptions.createDescription(requirement, `${requirement.$container.id}.${requirement.id}`, document))
+        const requirements = array.map(requirement => this.descriptions.createDescription(requirement, generateRequirementDescription(requirement), document))
         
-        const useCases = root.UseCase.map(useCase => 
-                this.descriptions.createDescription(useCase, `${useCase.id}`, document))
+        const useCases = arrayUC.map(useCase => 
+                this.descriptions.createDescription(useCase, generateUseCaseDescription(useCase), document))
         
-        const events = root.UseCase.flatMap(useCase => 
-            useCase.events.map(event => this.descriptions.createDescription(event, `${event.$container.id}.${event.id}`, document)))
+        const events = arrayUC.flatMap(useCase => 
+            useCase.events.map(event => this.descriptions.createDescription(event, generateEventDescription(event), document)))
 
         root.UseCase.map(
                     useCase => this.exportNode(useCase, default_global, document))
