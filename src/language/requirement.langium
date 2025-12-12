@@ -1,6 +1,5 @@
-import 'terminals'
 import 'helpers'
-
+import 'terminals'
 
 type Requirement=(FunctionalRequirement | NonFunctionalRequirement);
 
@@ -19,7 +18,7 @@ FunctionalRequirement:
         (Description
         |Name
         |Priority 
-        |'depend'':' depend= [Requirement:QualifiedName](',' depends+=[Requirement:QualifiedName])?  
+        |'depend'':' depend= [Requirement:QualifiedName]*(',' depends+=[Requirement:QualifiedName])?  
         )*
     '}'
 ;
